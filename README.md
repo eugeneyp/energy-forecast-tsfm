@@ -56,5 +56,5 @@ Our experiments on the March 2026 evaluation period demonstrate significant impr
 ## 📚 References
 
 - **Chronos (2024)**: [Chronos: Learning the Language of Time Series](https://arxiv.org/abs/2403.05950) (Ansari et al.).
-- **Chronos-2 (2026)**: [Chronos-2: Multi-dataset Pre-training for Time Series Forecasting](https://arxiv.org/pdf/2602.10848) (Amazon Research).
-- **Universal Forecasting**: [ArXiv: 2602.10848](https://arxiv.org/pdf/2602.10848) — Introducing the Group Attention Mechanism for zero-shot covariate integration.
+- **Chronos-2 (2025)**: [Chronos-2: From Univariate to Universal Forecasting](https://arxiv.org/abs/2510.15821) (Ansari et al.).
+- **Energy Load Forecasting (2026)**: [Time Series Foundation Models for Energy Load Forecasting on Consumer Hardware: A Multi-Dimensional Zero-Shot Benchmark](https://arxiv.org/abs/2602.10848) (Luigi Simeone).
