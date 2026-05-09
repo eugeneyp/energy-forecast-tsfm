@@ -115,3 +115,36 @@ The repo now has:
 2. Compare target-only and covariate-aware Chronos-2 runs on the same energy split.
 3. Add repeatable backtesting instead of a single holdout horizon.
 4. Standardize runtime logging and result collection across notebooks.
+
+
+## 3. `ercot-chronos-univariate-2025-summer.ipynb` & `ercot-chronos-covariate-2025-summer.ipynb`
+
+Purpose:
+
+- Evaluate Chronos-2 on real-world extreme energy demand data (ERCOT Dallas, August 2025).
+- Compare zero-shot forecasting performance between purely univariate inputs and covariate-aware inputs (weather + calendar) during high-volatility summer periods.
+- Understand the impact of using a subset of "Lean" covariates vs "Full" covariates on prediction interval calibration.
+
+Data and setup:
+
+- Dataset: ERCOT Hourly Energy Demand (NCENT region) joined with Open-Meteo weather features.
+- Context window: June 1, 2025 to start of prediction day (`512` hours max).
+- Forecast horizon: `24` hourly steps (Day-ahead).
+- Evaluation period: `31` days in August 2025.
+- Baseline: Seasonal Naive with a `168` hour (7-day) period.
+
+Observed metrics (August 2025 Average):
+
+| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
+| --- | ---: | ---: | ---: | ---: |
+| MAE | 906.91 | 535.35 | 588.46 | 1584.17 |
+| RMSE | 1422.20 | 753.09 | 785.56 | 2118.32 |
+| sMAPE | 4.55% | 2.77% | 3.10% | 8.25% |
+| MASE | 0.55 | 0.33 | 0.36 | 0.97 |
+| Coverage (90%) | 76.48% | 86.69% | 79.30% | N/A |
+
+What it proves:
+
+- While Chronos-2 can beat the Seasonal Naive baseline in a purely univariate setting, its uncertainty calibration suffers greatly (76.48% coverage) during extreme weather months.
+- Providing future-known covariates (like temperatures and holidays) leads to a **massive >40% error reduction** in MAE/RMSE and restores probabilistic calibration (86.69% coverage).
+- Unlike milder months (e.g., March) where a "Lean" subset of features can outperform a full set, extreme summer periods require **Full Covariates** (including humidity and shortwave radiation) to properly capture AC-driven demand spikes.
