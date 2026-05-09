@@ -117,7 +117,7 @@ The repo now has:
 4. Standardize runtime logging and result collection across notebooks.
 
 
-## 3. `ercot-chronos-univariate-2025-summer.ipynb` & `ercot-chronos-covariate-2025-summer.ipynb`
+## 3. `ercot-univariate-2025-summer.ipynb` & `ercot-covariate-2025-summer.ipynb`
 
 Purpose:
 
@@ -150,7 +150,7 @@ What it proves:
 - Unlike milder months (e.g., March) where a "Lean" subset of features can outperform a full set, extreme summer periods require **Full Covariates** (including humidity and shortwave radiation) to properly capture AC-driven demand spikes.
 
 
-## 4. `ieso-chronos-univariate` & `ieso-chronos-covariate` (Toronto, ON)
+## 4. `ieso-univariate` & `ieso-covariate` (Toronto, ON)
 
 Purpose:
 

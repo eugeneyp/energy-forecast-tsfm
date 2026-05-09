@@ -88,9 +88,9 @@ To prove geographic transferability, we tested the model zero-shot on the Indepe
 │   ├── ercot_dallas_covariate_2026.csv    # Target + Weather/Calendar features
 │   └── raw/                               # Original ERCOT and Open-Meteo files
 ├── notebooks/
-│   ├── ercot-chronos-univariate.ipynb     # Univariate benchmark
-│   ├── ercot-chronos-covariate.ipynb      # Full covariate experiment
-│   └── ercot-chronos-covariate-lean.ipynb # Optimized lean covariate experiment
+│   ├── ercot-univariate-2026-winter.ipynb     # Univariate benchmark
+│   ├── ercot-covariate-2026-winter.ipynb      # Full covariate experiment
+│   └── ercot-covariate-lean-2026-winter.ipynb # Optimized lean covariate experiment
 └── src/
     └── prepare_forecast_data.py           # Data processing and feature engineering
 ```
