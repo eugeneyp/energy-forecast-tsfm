@@ -148,3 +148,43 @@ What it proves:
 - While Chronos-2 can beat the Seasonal Naive baseline in a purely univariate setting, its uncertainty calibration suffers greatly (76.48% coverage) during extreme weather months.
 - Providing future-known covariates (like temperatures and holidays) leads to a **massive >40% error reduction** in MAE/RMSE and restores probabilistic calibration (86.69% coverage).
 - Unlike milder months (e.g., March) where a "Lean" subset of features can outperform a full set, extreme summer periods require **Full Covariates** (including humidity and shortwave radiation) to properly capture AC-driven demand spikes.
+
+
+## 4. `ieso-chronos-univariate` & `ieso-chronos-covariate` (Toronto, ON)
+
+Purpose:
+
+- Evaluate the geographical and climatic transferability of Chronos-2 by running the exact same benchmarks on the Independent Electricity System Operator (IESO) grid in Toronto, Ontario.
+- Stress-test the model against both Winter (heating) and Summer (cooling) peak periods.
+
+Data and setup:
+
+- Dataset: IESO Hourly Energy Demand (aggregated FSAs starting with 'M') joined with Open-Meteo weather features. Ontario holidays ('holidays.CA(prov="ON")') used for calendar features.
+- Context window: `512` hours max.
+- Forecast horizon: `24` hourly steps (Day-ahead).
+- Evaluation period: February 2025 (Winter) and August 2025 (Summer).
+- Baseline: Seasonal Naive with a `168` hour (7-day) period.
+
+### Winter 2025 (February)
+| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
+| --- | ---: | ---: | ---: | ---: |
+| MAE | 21549.75 | 16196.69 | 16245.41 | 45506.55 |
+| RMSE | 28988.73 | 21099.33 | 21622.77 | 65669.01 |
+| sMAPE | 2.41% | 1.80% | 1.80% | 5.24% |
+| MASE | 0.31 | 0.23 | 0.23 | 0.66 |
+| Coverage (90%) | 84.52% | 85.71% | 86.90% | N/A |
+
+### Summer 2025 (August)
+| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
+| --- | ---: | ---: | ---: | ---: |
+| MAE | 52074.45 | 31497.49 | 33780.52 | 233703.66 |
+| RMSE | 77963.33 | 43310.91 | 47170.08 | 282627.41 |
+| sMAPE | 5.33% | 3.40% | 3.53% | 24.09% |
+| MASE | 0.20 | 0.12 | 0.13 | 0.88 |
+| Coverage (90%) | 89.92% | 89.11% | 89.92% | N/A |
+
+What it proves:
+
+- **Universal Generalization**: The foundation model successfully generalized to a completely different grid operator and climate profile without any fine-tuning.
+- **Winter Accuracy**: Using weather covariates dropped the sMAPE to an incredible **1.80%** during the winter heating season.
+- **Extreme Volatility Handling**: During the Toronto summer, the Seasonal Naive baseline completely collapsed (24% error). Despite this massive volatility, Chronos-2 maintained an impressive 5.33% error univariate, and dropped to **3.40%** when given full weather covariates, all while achieving near-perfect 89-90% interval coverage.
