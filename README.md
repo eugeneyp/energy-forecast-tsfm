@@ -14,12 +14,26 @@ This repository explores state-of-the-art zero-shot time series forecasting for 
 - **Model**: `amazon/chronos-2`
 - **Context Length**: 512 hours (historical lookback)
 - **Forecast Horizon**: 24 hours (day-ahead forecasting)
-- **Evaluation Period**: March 2026
 
-## 📊 Benchmark Results (March 2026)
+## 🛰️ Data Sources & Preparation
 
-Our experiments on the March 2026 evaluation period demonstrate significant improvements when transitioning from univariate to covariate-aware forecasting.
+To rigorously evaluate the model across distinct geographies and climates, we compiled hourly datasets for Dallas, Texas (cooling-dominated) and Toronto, Ontario (heating-dominated/mixed).
 
+**Data Sources:**
+- **Dallas Energy Demand**: Hourly ERCOT load data for the NCENT region downloaded from the [ERCOT Load History](https://www.ercot.com/gridinfo/load/load_hist).
+- **Toronto Energy Demand**: Hourly IESO consumption data downloaded from [IESO Hourly Consumption](https://reports-public.ieso.ca/public/HourlyConsumptionByFSA/). We aggregated the total demand for all Forward Sortation Areas (FSAs) starting with 'M' (Toronto) across all customer types.
+- **Weather Data**: Hourly meteorological data (temperature, humidity, radiation, etc.) for both Dallas and Toronto sourced from the [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api).
+
+**Data Preparation:**
+- **Timestamp Alignment**: Both ERCOT and IESO report timestamps as "Hour Ending" (hours 1-24). We converted these to standard "Beginning of Hour" `timestamp` format by subtracting one hour to align seamlessly with Open-Meteo weather data.
+- **Calendar Features**: Generated regional `day_of_week` and `is_holiday` variables (using Texas holidays for Dallas and Ontario holidays for Toronto).
+- **Frequency Handling**: All merged datasets were strictly resampled to an hourly frequency with linear interpolation to handle Daylight Saving Time transitions or missing rows.
+
+## 📊 Benchmark Results: Dallas, Texas (ERCOT)
+
+Our experiments in Dallas compare the transition from univariate to covariate-aware forecasting across a mild spring month and an extreme summer load period.
+
+### Winter/Spring (March 2026)
 | Metric | Univariate | Full Covariates | Lean Covariates | Improvement (Lean vs Univ) |
 | :--- | :--- | :--- | :--- | :--- |
 | **MAE** | 749.78 | **565.24** | 574.32 | 23.4% |
@@ -28,77 +42,59 @@ Our experiments on the March 2026 evaluation period demonstrate significant impr
 | **MASE** | 0.31 | **0.235** | 0.239 | 22.9% |
 | **Coverage (90%)** | 85.89% | 87.10% | **87.23%** | +1.34% |
 
-### Key Findings
-1. **Full Covariates** provide the best absolute point accuracy (MAE/sMAPE).
-2. **Lean Covariates** (Apparent Temperature, Day of Week, Holiday, Cloud Cover) achieve the best **RMSE** and **Calibration**, reducing large outliers and providing more reliable uncertainty intervals.
-3. Both covariate configurations outperform the univariate baseline by over **20%** across all major metrics.
+### Summer Extreme Load (August 2025)
+| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
+| :--- | :--- | :--- | :--- | :--- |
+| **MAE** | 906.91 | **535.35** | 588.46 | 1584.17 |
+| **RMSE** | 1422.20 | **753.09** | 785.56 | 2118.32 |
+| **sMAPE (%)**| 4.55% | **2.77%** | 3.10% | 8.25% |
+| **MASE** | 0.55 | **0.33** | 0.36 | 0.97 |
+| **Coverage (90%)**| 76.48% | **86.69%** | 79.30% | N/A |
 
+### Key Findings (Dallas)
+1. **Massive Summer Error Reduction**: Providing weather covariates during the intense summer heat reduced absolute errors by **over 40%** (2.77% sMAPE). The univariate model fails to anticipate large AC-driven spikes.
+2. **Restored Calibration**: The poor prediction interval coverage of the univariate model during extreme heat (76.48%) was completely fixed by adding full covariates (86.69%).
+3. **Full vs. Lean Configurations**: In mild months (March), Lean covariates optimized calibration. However, in extreme weather months, the **Full Covariates model wins across all metrics**, demonstrating that comprehensive weather features (humidity, radiation) are necessary for accurate peak load anticipation.
 
+## 🍁 Benchmark Results: Toronto, Ontario (IESO)
 
-## 📊 Benchmark Results (Summer 2025: Extreme Load)
+To prove geographic and climatic transferability, we tested the model zero-shot on the Toronto grid across both extreme heating (Winter) and cooling (Summer) seasons.
 
-To validate the model under extreme conditions, we evaluated August 2025 during the intense Texas summer heat, comparing the models against a Seasonal Naive (7d) baseline.
-
-| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive | Improvement (Full vs Univ) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **MAE** | 906.91 | **535.35** | 588.46 | 1584.17 | 40.9% |
-| **RMSE** | 1422.20 | **753.09** | 785.56 | 2118.32 | 47.0% |
-| **sMAPE (%)**| 4.55% | **2.77%** | 3.10% | 8.25% | 39.1% |
-| **MASE** | 0.55 | **0.33** | 0.36 | 0.97 | 40.0% |
-| **Coverage (90%)**| 76.48% | **86.69%** | 79.30% | N/A | +10.21% |
-
-### Key Findings (Summer 2025)
-1. **Massive Error Reduction**: Unlike the milder spring evaluation, providing weather covariates during the summer heat reduced absolute errors by **over 40%**. The univariate model fails to anticipate large AC-driven spikes.
-2. **Restored Calibration**: The poor prediction interval coverage of the univariate model (76.48%) was completely fixed by adding covariates, jumping to a much healthier **86.69%**.
-3. **Full vs. Lean Configurations**: In extreme weather months, stripping away variables like Humidity and Shortwave Radiation negatively impacts the model. The **Full Covariates model wins across all metrics** during summer, demonstrating that comprehensive weather features are necessary for accurate peak load anticipation.
-
-
-
-## 🍁 Benchmark Results (Toronto: Universal Generalization)
-
-To prove geographic transferability, we tested the model zero-shot on the Independent Electricity System Operator (IESO) grid in Toronto, Ontario across both extreme heating (Winter) and cooling (Summer) seasons.
-
-### Winter 2025 (February)
+### Winter (February 2025)
 | Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
 | :--- | :--- | :--- | :--- | :--- |
 | **MAE** | 21549.75 | **16196.69** | 16245.41 | 45506.55 |
 | **RMSE** | 28988.73 | **21099.33** | 21622.77 | 65669.01 |
 | **sMAPE (%)**| 2.41% | **1.80%** | 1.80% | 5.24% |
 | **MASE** | 0.31 | **0.23** | 0.23 | 0.66 |
-| **Coverage**| 84.52% | 85.71% | **86.90%** | N/A |
+| **Coverage (90%)**| 84.52% | 85.71% | **86.90%** | N/A |
 
-### Summer 2025 (August)
+### Summer (August 2025)
 | Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
 | :--- | :--- | :--- | :--- | :--- |
 | **MAE** | 52074.45 | **31497.49** | 33780.52 | 233703.66 |
 | **RMSE** | 77963.33 | **43310.91** | 47170.08 | 282627.41 |
 | **sMAPE (%)**| 5.33% | **3.40%** | 3.53% | 24.09% |
 | **MASE** | 0.20 | **0.12** | 0.13 | 0.88 |
-| **Coverage**| **89.92%** | 89.11% | **89.92%** | N/A |
+| **Coverage (90%)**| **89.92%** | 89.11% | **89.92%** | N/A |
 
 ### Key Findings (Toronto)
-1. **Universal Transfer**: The model successfully generalized from Texas to Canada zero-shot. In Winter, weather covariates pushed the error down to a remarkable **1.80% sMAPE**.
+1. **Universal Transfer**: The model successfully generalized from Texas to Canada zero-shot. In Winter, adding weather covariates pushed the error down to a remarkable **1.80% sMAPE**.
 2. **Extreme Volatility Resiliency**: During the Toronto summer, the Seasonal Naive baseline completely collapsed (24.09% error). Despite this massive week-over-week volatility, Chronos-2 maintained excellent accuracy (3.40% with covariates) and recognized the uncertainty, achieving near-perfect 89-90% interval coverage.
 
 ## 📁 Project Structure
 
 ```text
-├── data/ercot/
-│   ├── ercot_dallas_univariate_2026.csv   # Target energy demand series
-│   ├── ercot_dallas_covariate_2026.csv    # Target + Weather/Calendar features
-│   └── raw/                               # Original ERCOT and Open-Meteo files
+├── data/
+│   ├── ercot/                             # Processed ERCOT Dallas data
+│   ├── ieso/                              # Processed IESO Toronto data
+│   └── */raw/                             # Original source files
 ├── notebooks/
-│   ├── ercot-univariate-2026-winter.ipynb     # Univariate benchmark
-│   ├── ercot-covariate-2026-winter.ipynb      # Full covariate experiment
-│   └── ercot-covariate-lean-2026-winter.ipynb # Optimized lean covariate experiment
+│   ├── ercot-[type]-[year]-[season].ipynb # Dallas benchmark notebooks
+│   └── ieso-[type]-[year]-[season].ipynb  # Toronto benchmark notebooks
 └── src/
     └── prepare_forecast_data.py           # Data processing and feature engineering
 ```
-
-## 🛰️ Data Sources
-
-- **ERCOT Hourly Data**: Hourly energy demand specifically for the **Dallas region**, downloaded from the [ERCOT Load History](https://www.ercot.com/gridinfo/load/load_hist).
-- **Historical Weather Data**: Sourced from the [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) for the Dallas region.
 
 ## 📚 References
 
