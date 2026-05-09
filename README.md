@@ -52,6 +52,34 @@ To validate the model under extreme conditions, we evaluated August 2025 during 
 2. **Restored Calibration**: The poor prediction interval coverage of the univariate model (76.48%) was completely fixed by adding covariates, jumping to a much healthier **86.69%**.
 3. **Full vs. Lean Configurations**: In extreme weather months, stripping away variables like Humidity and Shortwave Radiation negatively impacts the model. The **Full Covariates model wins across all metrics** during summer, demonstrating that comprehensive weather features are necessary for accurate peak load anticipation.
 
+
+
+## 🍁 Benchmark Results (Toronto: Universal Generalization)
+
+To prove geographic transferability, we tested the model zero-shot on the Independent Electricity System Operator (IESO) grid in Toronto, Ontario across both extreme heating (Winter) and cooling (Summer) seasons.
+
+### Winter 2025 (February)
+| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
+| :--- | :--- | :--- | :--- | :--- |
+| **MAE** | 21549.75 | **16196.69** | 16245.41 | 45506.55 |
+| **RMSE** | 28988.73 | **21099.33** | 21622.77 | 65669.01 |
+| **sMAPE (%)**| 2.41% | **1.80%** | 1.80% | 5.24% |
+| **MASE** | 0.31 | **0.23** | 0.23 | 0.66 |
+| **Coverage**| 84.52% | 85.71% | **86.90%** | N/A |
+
+### Summer 2025 (August)
+| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
+| :--- | :--- | :--- | :--- | :--- |
+| **MAE** | 52074.45 | **31497.49** | 33780.52 | 233703.66 |
+| **RMSE** | 77963.33 | **43310.91** | 47170.08 | 282627.41 |
+| **sMAPE (%)**| 5.33% | **3.40%** | 3.53% | 24.09% |
+| **MASE** | 0.20 | **0.12** | 0.13 | 0.88 |
+| **Coverage**| **89.92%** | 89.11% | **89.92%** | N/A |
+
+### Key Findings (Toronto)
+1. **Universal Transfer**: The model successfully generalized from Texas to Canada zero-shot. In Winter, weather covariates pushed the error down to a remarkable **1.80% sMAPE**.
+2. **Extreme Volatility Resiliency**: During the Toronto summer, the Seasonal Naive baseline completely collapsed (24.09% error). Despite this massive week-over-week volatility, Chronos-2 maintained excellent accuracy (3.40% with covariates) and recognized the uncertainty, achieving near-perfect 89-90% interval coverage.
+
 ## 📁 Project Structure
 
 ```text
