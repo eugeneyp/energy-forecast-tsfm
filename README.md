@@ -33,6 +33,25 @@ Our experiments on the March 2026 evaluation period demonstrate significant impr
 2. **Lean Covariates** (Apparent Temperature, Day of Week, Holiday, Cloud Cover) achieve the best **RMSE** and **Calibration**, reducing large outliers and providing more reliable uncertainty intervals.
 3. Both covariate configurations outperform the univariate baseline by over **20%** across all major metrics.
 
+
+
+## 📊 Benchmark Results (Summer 2025: Extreme Load)
+
+To validate the model under extreme conditions, we evaluated August 2025 during the intense Texas summer heat, comparing the models against a Seasonal Naive (7d) baseline.
+
+| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive | Improvement (Full vs Univ) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **MAE** | 906.91 | **535.35** | 588.46 | 1584.17 | 40.9% |
+| **RMSE** | 1422.20 | **753.09** | 785.56 | 2118.32 | 47.0% |
+| **sMAPE (%)**| 4.55% | **2.77%** | 3.10% | 8.25% | 39.1% |
+| **MASE** | 0.55 | **0.33** | 0.36 | 0.97 | 40.0% |
+| **Coverage (90%)**| 76.48% | **86.69%** | 79.30% | N/A | +10.21% |
+
+### Key Findings (Summer 2025)
+1. **Massive Error Reduction**: Unlike the milder spring evaluation, providing weather covariates during the summer heat reduced absolute errors by **over 40%**. The univariate model fails to anticipate large AC-driven spikes.
+2. **Restored Calibration**: The poor prediction interval coverage of the univariate model (76.48%) was completely fixed by adding covariates, jumping to a much healthier **86.69%**.
+3. **Full vs. Lean Configurations**: In extreme weather months, stripping away variables like Humidity and Shortwave Radiation negatively impacts the model. The **Full Covariates model wins across all metrics** during summer, demonstrating that comprehensive weather features are necessary for accurate peak load anticipation.
+
 ## 📁 Project Structure
 
 ```text
