@@ -104,7 +104,22 @@ We added **Target Time** calendar features to the Direct (Rich) model: Target Ho
 | **Aug 2025** | **Direct (Calendar)** | **997.54** | **1526.97** | **4.97%** | **0.52** |
 | **Mar 2026** | **Direct (Calendar)** | **912.96** | **1198.49** | **6.58%** | **0.48** |
 
-**Key Findings**: 
-1. **Closing the Gap**: Adding calendar awareness dropped the August sMAPE from 5.99% to **4.97%**, coming within 0.4% of Chronos-2's zero-shot performance (4.55%).
-2. **Holiday/Weekend Impact**: Explicitly marking weekends and holidays allows the model to handle demand drops that pure lags sometimes misinterpret as trend shifts.
-3. **Foundation Model Context**: Despite the heavy feature engineering for XGBoost, Chronos-2 Univariate still maintains a slight lead in August, demonstrating the power of its 512-hour context window.
+### Phase 3: Weather Covariates
+*Notebook: `notebooks/xgboost/ercot-xgboost-weather.ipynb`*
+
+We added 8 **Target Time** weather features: Temperature, Apparent Temp, Humidity, Dew Point, Wind Speed, Cloud Cover, Precipitation, and Shortwave Radiation.
+
+| Test Window | Strategy | MAE | RMSE | sMAPE | MASE |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| **Aug 2025** | **Direct (Weather Aware)** | **627.13** | **839.70** | **3.24%** | **0.33** |
+| **Mar 2026** | **Direct (Weather Aware)** | **542.07** | **695.32** | **4.05%** | **0.28** |
+
+---
+
+## 📈 Analysis & Insights
+
+### Foundation Models vs. Traditional ML
+1. **Univariate Superiority**: Chronos-2 Univariate (4.55% sMAPE) easily beat the Baseline Naive model (8.25%) and outpaced the basic XGBoost lag model (5.99%), demonstrating the strength of zero-shot transfer learning.
+2. **Feature Engineering Threshold**: It took the addition of both calendar and comprehensive weather covariates for XGBoost to decisively overtake the univariate foundation model.
+3. **The Covariate Ceiling**: Even with perfect weather foresight, the engineered XGBoost model (3.24%) remains slightly behind the Chronos-2 Covariate model (2.77%) in the extreme August window. This suggests that the foundation model is better at learning the non-linear relationship between weather and energy demand from its vast pre-training data.
+4. **Complexity vs. Performance**: XGBoost requires meticulous feature alignment (24 independent models) to achieve these gains, whereas Chronos-2 uses a single pipeline for all scenarios.
