@@ -78,4 +78,22 @@ Before running full benchmarks, we established minimal smoke-test notebooks to v
 | **MASE** | 0.20 | **0.12** | 0.13 | 0.88 |
 | **Coverage**| **89.92%** | 89.11% | **89.92%** | N/A |
 
-**Analysis**: Chronos-2 successfully transfers to a new geography without retraining. In winter, covariates drop the error to a remarkably low 1.80%. In summer, despite extreme volatility breaking the naive baseline entirely, the model maintains high accuracy and near-perfect interval calibration. Consistent with Dallas, the "Lean" configuration optimizes for calibration during stable months, while "Full" covariates provide the best point accuracy during volatile summer months.
+## 4. XGBoost Benchmarks (Dallas, ERCOT)
+
+In this phase, we established a progressively built XGBoost baseline to compare against the zero-shot performance of Chronos-2.
+
+### Phase 1: Lagging Features Only
+*Notebook: `notebooks/xgboost/ercot-xgboost-lags.ipynb`*
+
+We compared **Recursive** forecasting against a **Direct Multi-Step (Rich Lags)** approach. The rich lag model uses seasonally aligned lags ($t-24, t-168$) plus origin momentum ($y_T, y_{T-1}, y_{T-2}$).
+
+| Test Window | Strategy | MAE | RMSE | sMAPE | MASE |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| **Aug 2025** | Recursive | 3070.60 | 3783.36 | 16.06% | 1.60 |
+| **Aug 2025** | **Direct (Rich)** | **1116.98** | **1575.01** | **5.81%** | **0.58** |
+| **Mar 2026** | Recursive | 1629.79 | 2073.56 | 12.16% | 0.85 |
+| **Mar 2026** | **Direct (Rich)** | **1048.22** | **1388.45** | **7.62%** | **0.55** |
+
+**Key Findings**: 
+1. **Momentum Helps**: Adding $y_{T-1}$ and $y_{T-2}$ dropped the August sMAPE from 6.18% to **5.81%**. This allows the model to "feel" the immediate trend at the forecast origin.
+2. **Beating the Baseline**: This optimized univariate XGBoost comfortably beats the Seasonal Naive (8.25%) but still trails Chronos-2 Univariate (4.55%), showing that foundation models extract more value from pure temporal patterns.
