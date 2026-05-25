@@ -89,11 +89,12 @@ We compared **Recursive** forecasting against a **Direct Multi-Step (Rich Lags)*
 
 | Test Window | Strategy | MAE | RMSE | sMAPE | MASE |
 | :--- | :--- | ---: | ---: | ---: | ---: |
-| **Aug 2025** | Recursive | 3070.60 | 3783.36 | 16.06% | 1.60 |
-| **Aug 2025** | **Direct (Rich)** | **1116.98** | **1575.01** | **5.81%** | **0.58** |
-| **Mar 2026** | Recursive | 1629.79 | 2073.56 | 12.16% | 0.85 |
-| **Mar 2026** | **Direct (Rich)** | **1048.22** | **1388.45** | **7.62%** | **0.55** |
+| **Aug 2025** | Recursive | 1796.79 | 2401.41 | 9.18% | 0.94 |
+| **Aug 2025** | **Direct (Rich)** | **1180.27** | **1675.96** | **5.99%** | **0.62** |
+| **Mar 2026** | Recursive | 1374.51 | 1832.07 | 10.11% | 0.72 |
+| **Mar 2026** | **Direct (Rich)** | **959.10** | **1291.98** | **6.95%** | **0.50** |
 
 **Key Findings**: 
-1. **Momentum Helps**: Adding $y_{T-1}$ and $y_{T-2}$ dropped the August sMAPE from 6.18% to **5.81%**. This allows the model to "feel" the immediate trend at the forecast origin.
-2. **Beating the Baseline**: This optimized univariate XGBoost comfortably beats the Seasonal Naive (8.25%) but still trails Chronos-2 Univariate (4.55%), showing that foundation models extract more value from pure temporal patterns.
+1. **Alignment Matters**: Using seasonally aligned lags and origin momentum allowed the basic XGBoost model to achieve **5.99% sMAPE** in August, successfully beating the Seasonal Naive baseline (8.25%).
+2. **Direct Superiority**: The Direct Multi-Step approach consistently outperforms the Recursive approach, especially in the March window where recursive drift is more pronounced.
+3. **Chronos-2 Context**: While the lag-only XGBoost now beats Seasonal Naive, Chronos-2 (Univariate) still holds an advantage in August (4.55% vs 5.99%), likely due to its broader context window and ability to capture multi-scale patterns.
