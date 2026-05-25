@@ -94,7 +94,17 @@ We compared **Recursive** forecasting against a **Direct Multi-Step (Rich Lags)*
 | **Mar 2026** | Recursive | 1374.51 | 1832.07 | 10.11% | 0.72 |
 | **Mar 2026** | **Direct (Rich)** | **959.10** | **1291.98** | **6.95%** | **0.50** |
 
+### Phase 2: Calendar Features
+*Notebook: `notebooks/xgboost/ercot-xgboost-calendar.ipynb`*
+
+We added **Target Time** calendar features to the Direct (Rich) model: Target Hour, Day of Week, Weekend Flag, Month, and Public Holiday.
+
+| Test Window | Strategy | MAE | RMSE | sMAPE | MASE |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| **Aug 2025** | **Direct (Calendar)** | **997.54** | **1526.97** | **4.97%** | **0.52** |
+| **Mar 2026** | **Direct (Calendar)** | **912.96** | **1198.49** | **6.58%** | **0.48** |
+
 **Key Findings**: 
-1. **Alignment Matters**: Using seasonally aligned lags and origin momentum allowed the basic XGBoost model to achieve **5.99% sMAPE** in August, successfully beating the Seasonal Naive baseline (8.25%).
-2. **Direct Superiority**: The Direct Multi-Step approach consistently outperforms the Recursive approach, especially in the March window where recursive drift is more pronounced.
-3. **Chronos-2 Context**: While the lag-only XGBoost now beats Seasonal Naive, Chronos-2 (Univariate) still holds an advantage in August (4.55% vs 5.99%), likely due to its broader context window and ability to capture multi-scale patterns.
+1. **Closing the Gap**: Adding calendar awareness dropped the August sMAPE from 5.99% to **4.97%**, coming within 0.4% of Chronos-2's zero-shot performance (4.55%).
+2. **Holiday/Weekend Impact**: Explicitly marking weekends and holidays allows the model to handle demand drops that pure lags sometimes misinterpret as trend shifts.
+3. **Foundation Model Context**: Despite the heavy feature engineering for XGBoost, Chronos-2 Univariate still maintains a slight lead in August, demonstrating the power of its 512-hour context window.
