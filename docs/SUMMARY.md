@@ -114,6 +114,33 @@ We added 8 **Target Time** weather features: Temperature, Apparent Temp, Humidit
 | **Aug 2025** | **Direct (Weather Aware)** | **627.13** | **839.70** | **3.24%** | **0.33** |
 | **Mar 2026** | **Direct (Weather Aware)** | **542.07** | **695.32** | **4.05%** | **0.28** |
 
+### Phase 4: Advanced Features & Hyperparameter Tuning
+*Notebook: [ercot-xgboost-advanced.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/xgboost/ercot-xgboost-advanced.ipynb)*
+
+We added rolling load statistics (6h, 12h, 24h), rolling weather features (3h, 6h, 12h), weather interaction features, and introduced early stopping on a chronological validation split.
+
+| Test Window | Strategy | MAE | RMSE | sMAPE | MASE |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| **Aug 2025** | **Direct (Advanced)** | **609.26** | **811.17** | **3.16%** | **0.32** |
+| **Mar 2026** | **Direct (Advanced)** | **557.37** | **690.44** | **4.19%** | **0.29** |
+
+#### Top 15 Most Influential Predictors (Gain at $h=12$ Midday Peak)
+1. **`feat_24h_aligned`** (51.87%): Load exactly 24 hours prior to target hour.
+2. **`target_apparent_temp_roll_mean_3h`** (22.53%): Rolling 3-hour mean apparent temperature at target time.
+3. **`target_temp_roll_mean_3h`** (4.33%): Rolling 3-hour mean temperature at target time.
+4. **`target_temp`** (4.17%): Temperature at target hour.
+5. **`target_temp_humidity_interaction`** (3.11%): Temperature * humidity at target hour.
+6. **`target_apparent_temp`** (2.59%): Apparent temperature at target hour.
+7. **`target_temp_hour_interaction`** (1.16%): Temperature * hour at target hour.
+8. **`target_apparent_temp_roll_mean_6h`** (1.01%): Rolling 6-hour mean apparent temperature.
+9. **`target_hour`** (0.90%): Hour of day of target prediction.
+10. **`target_temp_roll_mean_6h`** (0.84%): Rolling 6-hour mean temperature.
+11. **`target_apparent_temp_roll_mean_12h`** (0.68%): Rolling 12-hour mean apparent temperature.
+12. **`target_temp_roll_mean_12h`** (0.68%): Rolling 12-hour mean temperature.
+13. **`feat_168h_aligned`** (0.68%): Load exactly 1 week prior to target hour.
+14. **`target_radiation_roll_mean_3h`** (0.68%): Rolling 3-hour mean shortwave radiation.
+15. **`target_is_weekend`** (0.64%): Weekend flag.
+
 ---
 
 ## 📈 Analysis & Insights
