@@ -141,6 +141,16 @@ We added rolling load statistics (6h, 12h, 24h), rolling weather features (3h, 6
 14. **`target_radiation_roll_mean_3h`** (0.68%): Rolling 3-hour mean shortwave radiation.
 15. **`target_is_weekend`** (0.64%): Weekend flag.
 
+### Phase 5: Residual Learning & Degree Days
+*Notebook: [ercot-xgboost-residual.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/xgboost/ercot-xgboost-residual.ipynb)*
+
+We added Cooling & Heating Degree Days (CDD/HDD), long-term weather rolling windows (48h/72h), and trained models to predict target residuals relative to yesterday's load (`target_h - feat_24h_aligned`).
+
+| Test Window | Strategy | MAE | RMSE | sMAPE | MASE |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| **Aug 2025** | **Direct (Residual)** | **605.42** | **836.05** | **3.14%** | **0.32** |
+| **Mar 2026** | **Direct (Residual)** | **529.63** | **669.23** | **3.97%** | **0.28** |
+
 ---
 
 ## 📈 Analysis & Insights
