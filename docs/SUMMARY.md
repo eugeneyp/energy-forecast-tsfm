@@ -176,6 +176,23 @@ In Phase 5, by changing the target to predict the **load residual** ($y_{T+h} - 
 * **Calendar Shifts:** Day of week and weekend transitions.
 * **Degree Days:** HDD becomes 5th to capture heating deviations.
 
+### Phase 6: Probabilistic Forecasting & 90% Interval Coverage
+*Notebook: [ercot-xgboost-probabilistic.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/xgboost/ercot-xgboost-probabilistic.ipynb)*
+
+We trained multi-quantile XGBoost models using the `reg:quantileerror` loss function for `quantile_alpha=[0.05, 0.95]`, predicting the 5th and 95th percentiles of target residuals.
+
+| Test Window | Strategy | MAE | RMSE | sMAPE | MASE | 90% Interval Coverage |
+| :--- | :--- | ---: | ---: | ---: | ---: | :---: |
+| **Aug 2025** | **Direct (Probabilistic)** | **605.42** | **836.05** | **3.14%** | **0.32** | **80.69%** |
+| **Mar 2026** | **Direct (Probabilistic)** | **529.63** | **669.23** | **3.97%** | **0.28** | **76.39%** |
+
+#### Probabilistic Calibration Analysis (Chronos-2 vs. XGBoost)
+While XGBoost achieves exceptional point forecast accuracy (decisively beating Chronos-2 in March), **Chronos-2 shows superior probabilistic calibration**:
+* **Chronos-2 Coverage**: **86.69%** (August) and **87.10%** (March), which is very close to the nominal **90%** target.
+* **XGBoost Coverage**: **80.69%** (August) and **76.39%** (March), indicating that XGBoost prediction intervals are too narrow (overconfident). 
+
+Chronos-2's global pre-training allows it to learn the true variability and variance from millions of time series, whereas local quantile regressions tend to fit overly tight intervals on smaller, local training sets.
+
 ---
 
 ## 📈 Analysis & Insights
