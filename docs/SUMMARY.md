@@ -151,6 +151,31 @@ We added Cooling & Heating Degree Days (CDD/HDD), long-term weather rolling wind
 | **Aug 2025** | **Direct (Residual)** | **605.42** | **836.05** | **3.14%** | **0.32** |
 | **Mar 2026** | **Direct (Residual)** | **529.63** | **669.23** | **3.97%** | **0.28** |
 
+#### Top 15 Most Influential Predictors (Gain at $h=12$ Midday Peak)
+1. **`target_apparent_temp`** (7.71%): Apparent temperature at target hour.
+2. **`target_apparent_temp_roll_mean_3h`** (7.70%): Rolling 3-hour mean apparent temperature at target time.
+3. **`target_temp`** (6.93%): Dry-bulb temperature at target hour.
+4. **`target_is_weekend`** (6.13%): Weekend flag for target day.
+5. **`target_hdd`** (5.15%): Heating Degree Days.
+6. **`target_temp_roll_mean_3h`** (5.01%): Rolling 3-hour mean temperature.
+7. **`target_dayofweek`** (4.57%): Day of the week of target prediction.
+8. **`feat_24h_aligned`** (4.45%): Load 24 hours prior to target hour (yesterday's load).
+9. **`target_apparent_temp_roll_mean_6h`** (4.23%): Rolling 6-hour mean apparent temperature.
+10. **`load_roll_min_24h`** (4.06%): Minimum load observed in the 24 hours prior to origin.
+11. **`target_temp_humidity_interaction`** (3.85%): Temperature * humidity at target hour.
+12. **`target_apparent_temp_roll_mean_12h`** (2.30%): Rolling 12-hour mean apparent temperature.
+13. **`load_roll_max_24h`** (2.07%): Maximum load observed in the 24 hours prior to origin.
+14. **`target_temp_roll_mean_12h`** (1.82%): Rolling 12-hour mean temperature.
+15. **`target_hour`** (1.75%): Hour of day of target prediction.
+
+#### The Feature Importance Shift (Phase 4 vs. Phase 5)
+In Phase 4, the model had to learn the absolute base load magnitude, meaning **`feat_24h_aligned`** (load 24h prior) dominated with **51.87%** of the importance gain.
+
+In Phase 5, by changing the target to predict the **load residual** ($y_{T+h} - y_{T+h-24}$), the baseline load level is mathematically pre-handled. This reduces the importance of `feat_24h_aligned` to just **4.45%** and forces the model to split on the actual **drivers of change** from yesterday to today:
+* **Weather Shifts:** Apparent temperature and 3h heat accumulation become the top predictors.
+* **Calendar Shifts:** Day of week and weekend transitions.
+* **Degree Days:** HDD becomes 5th to capture heating deviations.
+
 ---
 
 ## 📈 Analysis & Insights
