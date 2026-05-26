@@ -82,6 +82,36 @@ To prove geographic and climatic transferability, we tested the model zero-shot 
 1. **Universal Transfer**: The model successfully generalized from Texas to Canada zero-shot. In Winter, adding weather covariates pushed the error down to a remarkable **1.80% sMAPE**.
 2. **Extreme Volatility Resiliency**: During the Toronto summer, the Seasonal Naive baseline completely collapsed (24.09% error). Despite this massive week-over-week volatility, Chronos-2 maintained excellent accuracy (3.40% with covariates) and recognized the uncertainty, achieving near-perfect 89-90% interval coverage.
 
+## 📊 XGBoost vs. Chronos-2 Comparison (Dallas, ERCOT)
+
+To evaluate the zero-shot capabilities of Chronos-2 against traditional machine learning methods, we established a progressively built, local XGBoost baseline model trained on historical ERCOT load and weather data. 
+
+In its final phase (**Phase 6 - Probabilistic**), the XGBoost model incorporates target residual learning (predicting deviation from yesterday's load), Cooling/Heating Degree Days (CDD/HDD), long-term weather thermal inertia (48h/72h rolling means), and multi-quantile estimation (`reg:quantileerror` for the 5th and 95th percentiles).
+
+### August 2025 (Summer Extreme Load Window)
+
+| Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Chronos-2 (Full Covariates)** | **535.35** | **753.09** | **2.77%** | **0.33** | **86.69%** (Near-nominal) |
+| **XGBoost (Phase 6 - Probabilistic)** | 605.42 | 836.05 | 3.14% | 0.32 | 80.69% (Under-covering) |
+| **XGBoost (Phase 3 - Weather Aware)** | 627.13 | 839.70 | 3.24% | 0.33 | N/A |
+| **Seasonal Naive Baseline** | 1584.17 | 2118.32 | 8.25% | 0.97 | N/A |
+
+### March 2026 (Winter/Spring Window)
+
+| Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **XGBoost (Phase 6 - Probabilistic)** | **529.63** | **669.23** | **3.97%** | **0.28** | 76.39% (Under-covering) |
+| **Chronos-2 (Full Covariates)** | 565.24 | 778.52 | 4.14% | 0.235 | **87.10%** (Near-nominal) |
+| **XGBoost (Phase 3 - Weather Aware)** | 542.07 | 695.32 | 4.05% | 0.28 | N/A |
+| **Seasonal Naive Baseline** | 1565.43 | 2020.57 | 11.40% | 0.65 | N/A |
+
+### Key Findings (XGBoost vs. Chronos-2)
+
+1. **March Victory (Point Forecasts)**: In standard weather regimes, the locally trained XGBoost model out-performs Chronos-2 (MAE: 529.63 vs 565.24). Residual detrending makes local ML models highly precise during stable periods.
+2. **Summer Covariate Ceiling**: In the extreme cooling peak window (August 2025), Chronos-2 still holds a clear advantage (MAE: 535.35 vs. 605.42), showing that the zero-shot foundation model is better at mapping complex weather-demand responses than local tree models.
+3. **Probabilistic Calibration Advantage**: **Chronos-2 has superior probabilistic calibration.** Its empirical coverage (86.69% and 87.10%) is very close to the nominal 90% target. XGBoost's empirical coverage (80.69% and 76.39%) falls short, indicating that local tree-based quantile regressions tend to fit overconfident, narrow intervals.
+
 ## 📁 Project Structure
 
 ```text
