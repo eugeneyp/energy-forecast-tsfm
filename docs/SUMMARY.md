@@ -6,11 +6,11 @@ This document summarizes the end-to-end forecasting paths established in this pr
 
 Before running full benchmarks, we established minimal smoke-test notebooks to verify the environment and the `amazon/chronos-2` model load path.
 
-### `chronos-2-quickstart.ipynb`
+### [chronos-2-quickstart.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-tutorial/chronos-2-quickstart.ipynb)
 - **Purpose**: Verify the local runtime can load the model and run a univariate forecast using the official `m4_hourly` sample series (`H1`).
 - **Result**: Confirmed successful prediction and comparison against a Seasonal Naive baseline.
 
-### `chronos-2-covariate-test.ipynb`
+### [chronos-2-covariate-test.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-tutorial/chronos-2-covariate-test.ipynb)
 - **Purpose**: Verify the covariate-aware interface (`predict_df(..., future_df=...)`) using the official `electricity_price` dataset.
 - **Result**: Successfully integrated future-known covariates and aligned them with ground truth.
 
@@ -24,7 +24,7 @@ Before running full benchmarks, we established minimal smoke-test notebooks to v
 - **Processing**: Standardized "Hour Ending" to "Beginning of Hour", added Texas statutory holidays, and resampled to an hourly frequency.
 
 ### Winter/Spring (March 2026)
-*Notebooks: `ercot-univariate-2026-winter.ipynb`, `ercot-covariate-2026-winter.ipynb`, `ercot-covariate-lean-2026-winter.ipynb`*
+*Notebooks: [ercot-univariate-2026-winter.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ercot-univariate-2026-winter.ipynb), [ercot-covariate-2026-winter.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ercot-covariate-2026-winter.ipynb), [ercot-covariate-lean-2026-winter.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ercot-covariate-lean-2026-winter.ipynb)*
 
 | Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
 | :--- | ---: | ---: | ---: | ---: |
@@ -35,7 +35,7 @@ Before running full benchmarks, we established minimal smoke-test notebooks to v
 | **Coverage**| 85.89% | 87.10% | **87.23%** | N/A |
 
 ### Summer Extreme Load (August 2025)
-*Notebooks: `ercot-univariate-2025-summer.ipynb`, `ercot-covariate-2025-summer.ipynb`, `ercot-covariate-lean-2025-summer.ipynb`*
+*Notebooks: [ercot-univariate-2025-summer.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ercot-univariate-2025-summer.ipynb), [ercot-covariate-2025-summer.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ercot-covariate-2025-summer.ipynb), [ercot-covariate-lean-2025-summer.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ercot-covariate-lean-2025-summer.ipynb)*
 
 | Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
 | :--- | ---: | ---: | ---: | ---: |
@@ -57,7 +57,7 @@ Before running full benchmarks, we established minimal smoke-test notebooks to v
 - **Processing**: Converted "Hour Ending" (hours 1-24) to "Beginning of Hour" format, applied Ontario statutory holidays (`holidays.CA(prov='ON')`), and aligned with weather data.
 
 ### Winter (February 2025)
-*Notebooks: `ieso-univariate-2025-winter.ipynb`, `ieso-covariate-2025-winter.ipynb`, `ieso-covariate-lean-2025-winter.ipynb`*
+*Notebooks: [ieso-univariate-2025-winter.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ieso-univariate-2025-winter.ipynb), [ieso-covariate-2025-winter.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ieso-covariate-2025-winter.ipynb), [ieso-covariate-lean-2025-winter.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ieso-covariate-lean-2025-winter.ipynb)*
 
 | Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
 | :--- | ---: | ---: | ---: | ---: |
@@ -68,7 +68,7 @@ Before running full benchmarks, we established minimal smoke-test notebooks to v
 | **Coverage**| 84.52% | 85.71% | **86.90%** | N/A |
 
 ### Summer (August 2025)
-*Notebooks: `ieso-univariate-2025-summer.ipynb`, `ieso-covariate-2025-summer.ipynb`, `ieso-covariate-lean-2025-summer.ipynb`*
+*Notebooks: [ieso-univariate-2025-summer.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ieso-univariate-2025-summer.ipynb), [ieso-covariate-2025-summer.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ieso-covariate-2025-summer.ipynb), [ieso-covariate-lean-2025-summer.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/chronos-2/ieso-covariate-lean-2025-summer.ipynb)*
 
 | Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
 | :--- | ---: | ---: | ---: | ---: |

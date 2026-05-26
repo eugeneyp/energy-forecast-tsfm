@@ -90,8 +90,9 @@ To prove geographic and climatic transferability, we tested the model zero-shot 
 │   ├── ieso/                              # Processed IESO Toronto data
 │   └── */raw/                             # Original source files
 ├── notebooks/
-│   ├── ercot-[type]-[year]-[season].ipynb # Dallas benchmark notebooks
-│   └── ieso-[type]-[year]-[season].ipynb  # Toronto benchmark notebooks
+│   ├── chronos-2/                         # Chronos-2 benchmark notebooks (ERCOT & IESO)
+│   ├── chronos-tutorial/                  # Quickstart and covariate baseline notebooks
+│   └── xgboost/                           # XGBoost baseline notebooks
 └── src/
     └── prepare_forecast_data.py           # Data processing and feature engineering
 ```
