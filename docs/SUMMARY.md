@@ -202,3 +202,19 @@ Chronos-2's global pre-training allows it to learn the true variability and vari
 2. **Feature Engineering Threshold**: It took the addition of both calendar and comprehensive weather covariates for XGBoost to decisively overtake the univariate foundation model.
 3. **The Covariate Ceiling**: Even with perfect weather foresight, the engineered XGBoost model (3.24%) remains slightly behind the Chronos-2 Covariate model (2.77%) in the extreme August window. This suggests that the foundation model is better at learning the non-linear relationship between weather and energy demand from its vast pre-training data.
 4. **Complexity vs. Performance**: XGBoost requires meticulous feature alignment (24 independent models) to achieve these gains, whereas Chronos-2 uses a single pipeline for all scenarios.
+
+### 🚀 Production Deployment Analysis: Chronos-2 vs. XGBoost
+While Chronos-2 holds mathematical and probabilistic advantages, deploying both models in production exposes critical architectural trade-offs:
+
+| Dimension | XGBoost (Phase 5/6) | Chronos-2 (Full Covariates) |
+| :--- | :--- | :--- |
+| **Inference Hardware** | Low-cost CPU (e.g., serverless function like AWS Lambda). | GPU-enabled instance (required for practical decoding speeds). |
+| **Inference Latency** | **1 - 5 milliseconds** (simple tree traversal). | **1 - 5 seconds** (autoregressive generation over 500 paths). |
+| **Hosting Cost** | Negligible (runs on standard web hosting). | High (requires continuous containerized GPU instance). |
+| **Explainability** | High (fully auditable split nodes, SHAP-inspectable). | Low (deep learning Transformer is a black box). |
+| **Cold Start** | Poor (requires 1-2 years of local history to train). | Excellent (zero-shot transfer learning works immediately). |
+| **Online Retraining** | Extremely easy (takes seconds on CPU to adapt to drift). | Complex/Slow (finetuning deep networks is slow and risky). |
+
+#### Deployment Recommendation:
+* **Deploy Chronos-2** if you are forecasting a small number of system-wide regions, require highly calibrated 90% confidence boundaries for risk management, or are deploying to brand-new regions with very little historical data.
+* **Deploy XGBoost** if you need to scale to thousands of series (e.g., forecasting for individual buildings or feeders) under tight latency/cost constraints, require full explainability for grid operators, and have access to ample historical data.
