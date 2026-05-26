@@ -82,35 +82,53 @@ To prove geographic and climatic transferability, we tested the model zero-shot 
 1. **Universal Transfer**: The model successfully generalized from Texas to Canada zero-shot. In Winter, adding weather covariates pushed the error down to a remarkable **1.80% sMAPE**.
 2. **Extreme Volatility Resiliency**: During the Toronto summer, the Seasonal Naive baseline completely collapsed (24.09% error). Despite this massive week-over-week volatility, Chronos-2 maintained excellent accuracy (3.40% with covariates) and recognized the uncertainty, achieving near-perfect 89-90% interval coverage.
 
-## 📊 XGBoost vs. Chronos-2 Comparison (Dallas, ERCOT)
+## 📊 XGBoost vs. Chronos-2 Comparison
 
-To evaluate the zero-shot capabilities of Chronos-2 against traditional machine learning methods, we established a progressively built, local XGBoost baseline model trained on historical ERCOT load and weather data. 
+To evaluate the zero-shot capabilities of Chronos-2 against traditional machine learning methods, we established a progressively built, local XGBoost baseline model trained on historical load and weather data. The XGBoost model incorporates target residual learning (predicting deviation from yesterday's load), Cooling/Heating Degree Days (CDD/HDD), long-term weather thermal inertia (48h/72h rolling means), and multi-quantile estimation (`reg:quantileerror` for the 5th and 95th percentiles).
 
-In its final phase (**Phase 6 - Probabilistic**), the XGBoost model incorporates target residual learning (predicting deviation from yesterday's load), Cooling/Heating Degree Days (CDD/HDD), long-term weather thermal inertia (48h/72h rolling means), and multi-quantile estimation (`reg:quantileerror` for the 5th and 95th percentiles).
+### Dallas, Texas (ERCOT)
 
-### August 2025 (Summer Extreme Load Window)
-
+#### August 2025 (Summer Extreme Load Window)
 | Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Chronos-2 (Full Covariates)** | **535.35** | **753.09** | **2.77%** | **0.33** | **86.69%** (Near-nominal) |
-| **XGBoost (Phase 6 - Probabilistic)** | 605.42 | 836.05 | 3.14% | 0.32 | 80.69% (Under-covering) |
+| **XGBoost (Phase 6 - Probabilistic)** | 609.19 | 839.36 | 3.16% | 0.32 | 80.14% (Under-covering) |
 | **XGBoost (Phase 3 - Weather Aware)** | 627.13 | 839.70 | 3.24% | 0.33 | N/A |
 | **Seasonal Naive Baseline** | 1584.17 | 2118.32 | 8.25% | 0.97 | N/A |
 
-### March 2026 (Winter/Spring Window)
-
+#### March 2026 (Winter/Spring Window)
 | Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **XGBoost (Phase 6 - Probabilistic)** | **529.63** | **669.23** | **3.97%** | **0.28** | 76.39% (Under-covering) |
-| **Chronos-2 (Full Covariates)** | 565.24 | 778.52 | 4.14% | 0.235 | **87.10%** (Near-nominal) |
+| **XGBoost (Phase 6 - Probabilistic)** | **531.41** | **672.01** | **3.98%** | **0.28** | 76.39% (Under-covering) |
+| **Chronos-2 (Full Covariates)** | 565.24 | 778.52 | 4.14% | 0.24 | **87.10%** (Near-nominal) |
 | **XGBoost (Phase 3 - Weather Aware)** | 542.07 | 695.32 | 4.05% | 0.28 | N/A |
 | **Seasonal Naive Baseline** | 1565.43 | 2020.57 | 11.40% | 0.65 | N/A |
 
+---
+
+### Toronto, Ontario (IESO)
+
+#### February 2025 (Winter Window)
+| Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Chronos-2 (Full Covariates)** | **16,196.69** | **21,099.33** | **1.80%** | **0.23** | 85.71% (Near-nominal) |
+| **XGBoost (Phase 6 - Probabilistic)** | 20,963.26 | 26,999.00 | 2.33% | 0.24 | **87.96%** (Near-nominal) |
+| **Seasonal Naive Baseline** | 45,506.55 | 65,669.01 | 5.24% | 0.66 | N/A |
+
+#### August 2025 (Summer Window)
+| Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Chronos-2 (Full Covariates)** | **31,497.49** | **43,310.91** | **3.40%** | **0.12** | **89.11%** (Near-nominal) |
+| **XGBoost (Phase 6 - Probabilistic)** | 38,790.57 | 54,729.79 | 3.92% | 0.45 | 81.53% (Under-covering) |
+| **Seasonal Naive Baseline** | 233,703.66 | 282,627.41 | 24.09% | 0.88 | N/A |
+
+---
+
 ### Key Findings (XGBoost vs. Chronos-2)
 
-1. **March Victory (Point Forecasts)**: In standard weather regimes, the locally trained XGBoost model out-performs Chronos-2 (MAE: 529.63 vs 565.24). Residual detrending makes local ML models highly precise during stable periods.
-2. **Summer Covariate Ceiling**: In the extreme cooling peak window (August 2025), Chronos-2 still holds a clear advantage (MAE: 535.35 vs. 605.42), showing that the zero-shot foundation model is better at mapping complex weather-demand responses than local tree models.
-3. **Probabilistic Calibration Advantage**: **Chronos-2 has superior probabilistic calibration.** Its empirical coverage (86.69% and 87.10%) is very close to the nominal 90% target. XGBoost's empirical coverage (80.69% and 76.39%) falls short, indicating that local tree-based quantile regressions tend to fit overconfident, narrow intervals.
+1. **Climatic Transferability**: Chronos-2 demonstrates superior zero-shot performance when transferring to a new geography/climate. In Toronto, Chronos-2 wins across both winter and summer point accuracy metrics (MAE: 16.2k vs. 20.9k in winter, 31.5k vs. 38.8k in summer).
+2. **Point Forecast Competition**: Locally trained XGBoost is highly competitive in moderate seasons, outperforming Chronos-2 in the ERCOT winter/spring window (MAE: 531.41 vs 565.24). 
+3. **Probabilistic Calibration**: **Chronos-2 exhibits superior and more stable probabilistic calibration.** Its coverage stays consistently close to the nominal 90% target across all regions and windows (85% to 89%). In contrast, XGBoost's quantile regression intervals tend to be overconfident and under-cover target values (dropping to 76% in ERCOT winter and 81% in Toronto summer).
 
 ## 📁 Project Structure
 
@@ -124,7 +142,8 @@ In its final phase (**Phase 6 - Probabilistic**), the XGBoost model incorporates
 │   ├── chronos-tutorial/                  # Quickstart and covariate baseline notebooks
 │   └── xgboost/                           # XGBoost baseline notebooks
 └── src/
-    └── prepare_forecast_data.py           # Data processing and feature engineering
+    ├── prepare_forecast_data.py           # ERCOT Dallas data preparation
+    └── prepare_ieso_forecast_data.py      # IESO Toronto data preparation
 ```
 
 ## 📚 References

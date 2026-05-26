@@ -148,8 +148,8 @@ We added Cooling & Heating Degree Days (CDD/HDD), long-term weather rolling wind
 
 | Test Window | Strategy | MAE | RMSE | sMAPE | MASE |
 | :--- | :--- | ---: | ---: | ---: | ---: |
-| **Aug 2025** | **Direct (Residual)** | **605.42** | **836.05** | **3.14%** | **0.32** |
-| **Mar 2026** | **Direct (Residual)** | **529.63** | **669.23** | **3.97%** | **0.28** |
+| **Aug 2025** | **Direct (Residual)** | **609.19** | **839.36** | **3.16%** | **0.32** |
+| **Mar 2026** | **Direct (Residual)** | **531.41** | **672.01** | **3.98%** | **0.28** |
 
 #### Top 15 Most Influential Predictors (Gain at $h=12$ Midday Peak)
 1. **`target_apparent_temp`** (7.71%): Apparent temperature at target hour.
@@ -183,8 +183,8 @@ We trained multi-quantile XGBoost models using the `reg:quantileerror` loss func
 
 | Test Window | Strategy | MAE | RMSE | sMAPE | MASE | 90% Interval Coverage |
 | :--- | :--- | ---: | ---: | ---: | ---: | :---: |
-| **Aug 2025** | **Direct (Probabilistic)** | **605.42** | **836.05** | **3.14%** | **0.32** | **80.69%** |
-| **Mar 2026** | **Direct (Probabilistic)** | **529.63** | **669.23** | **3.97%** | **0.28** | **76.39%** |
+| **Aug 2025** | **Direct (Probabilistic)** | **609.19** | **839.36** | **3.16%** | **0.32** | **80.14%** |
+| **Mar 2026** | **Direct (Probabilistic)** | **531.41** | **672.01** | **3.98%** | **0.28** | **76.39%** |
 
 #### Probabilistic Calibration Analysis (Chronos-2 vs. XGBoost)
 While XGBoost achieves exceptional point forecast accuracy (decisively beating Chronos-2 in March), **Chronos-2 shows superior probabilistic calibration**:
@@ -192,6 +192,38 @@ While XGBoost achieves exceptional point forecast accuracy (decisively beating C
 * **XGBoost Coverage**: **80.69%** (August) and **76.39%** (March), indicating that XGBoost prediction intervals are too narrow (overconfident). 
 
 Chronos-2's global pre-training allows it to learn the true variability and variance from millions of time series, whereas local quantile regressions tend to fit overly tight intervals on smaller, local training sets.
+
+---
+
+## 5. XGBoost Benchmarks (Toronto, IESO)
+
+We implemented and ran the Phase 6 Probabilistic XGBoost benchmark on Toronto (IESO) data. The model was trained on historical data from January 2023 to January 2025 and evaluated on February 2025 (Winter) and August 2025 (Summer) test windows.
+
+### Winter (February 2025)
+*Notebook: [ieso-xgboost-probabilistic.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/xgboost/ieso-xgboost-probabilistic.ipynb)*
+
+| Metric | XGBoost (Probabilistic) | Chronos-2 (Full Covariates) | Seasonal Naive |
+| :--- | ---: | ---: | ---: |
+| **MAE** | 20963.26 | **16196.69** | 45506.55 |
+| **RMSE** | 26999.00 | **21099.33** | 65669.01 |
+| **sMAPE**| 2.33% | **1.80%** | 5.24% |
+| **MASE** | 0.24 | **0.23** | 0.66 |
+| **Coverage**| **87.96%** | 85.71% | N/A |
+
+### Summer (August 2025)
+*Notebook: [ieso-xgboost-probabilistic.ipynb](file:///Users/epeng/code/personal/energy-forecast-tsfm/notebooks/xgboost/ieso-xgboost-probabilistic.ipynb)*
+
+| Metric | XGBoost (Probabilistic) | Chronos-2 (Full Covariates) | Seasonal Naive |
+| :--- | ---: | ---: | ---: |
+| **MAE** | 38790.57 | **31497.49** | 233703.66 |
+| **RMSE** | 54729.79 | **43310.91** | 282627.41 |
+| **sMAPE**| 3.92% | **3.40%** | 24.09% |
+| **MASE** | 0.45 | **0.12** | 0.88 |
+| **Coverage**| 81.53% | **89.11%** | N/A |
+
+**Analysis**:
+* **Point Accuracy**: Chronos-2 with full covariates outperforms XGBoost on both winter and summer point metrics, proving the deep learning model's strong zero-shot capability when transferring to new climates and heating-dominated grids.
+* **Interval Coverage**: In winter, XGBoost achieves excellent calibration with **87.96%** coverage (compared to Chronos-2's **85.71%**). In the volatile summer peak, however, XGBoost becomes overconfident and drops to **81.53%** coverage, whereas Chronos-2 remains near-perfectly calibrated at **89.11%**.
 
 ---
 
