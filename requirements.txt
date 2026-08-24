@@ -7,3 +7,4 @@ holidays>=0.95
 xgboost>=2.0
 scikit-learn>=1.3
 openpyxl>=3.1
+tirex-2>=0.2.1

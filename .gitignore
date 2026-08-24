@@ -217,3 +217,14 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 data/ieso/raw/
+
+# OS metadata
+.DS_Store
+*/.DS_Store
+**/.DS_Store
+
+# Local IDE metadata
+.antigravitycli/
+
+# Scratch directory
+scratch/

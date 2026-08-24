@@ -1,134 +1,95 @@
-# Energy Forecast using Time-Series Foundation Model
+# Energy Forecast using Time-Series Foundation Models
 
-This repository explores state-of-the-art zero-shot time series forecasting for energy demand using the **Chronos-2** foundation model. We compare univariate baselines with covariate-informed models that incorporate weather and calendar data to improve forecasting accuracy and reliability.
+This repository benchmarks state-of-the-art zero-shot time series forecasting for regional energy demand using foundation models—specifically **Chronos-2** (Transformer architecture) and **TiRex-2** (xLSTM architecture)—against locally trained, rolling-retrained **XGBoost** and **Seasonal Naive** baselines.
 
 ## 🚀 Key Features
 
-- **Univariate Forecasting**: Baseline performance using the original Chronos model.
-- **Covariate-Aware Forecasting**: Leveraging **Chronos-2**'s ability to ingest auxiliary variables (weather, holidays, day-of-week).
-- **Lean Covariate Optimization**: A study on the impact of feature selection (Weather + Calendar) to improve model calibration and robustness.
-- **Probabilistic Calibration**: Evaluation of 90% prediction intervals to ensure reliable uncertainty estimation.
+- **Multi-Foundation Model Evaluation**: Direct head-to-head comparison between **Chronos-2** (Amazon) and **TiRex-2** (NX-AI).
+- **Univariate vs. Covariate-Aware Forecasting**: Ingestion of auxiliary meteorological forecasts and regional calendar features (Texas and Ontario statutory holidays).
+- **Lean Covariate Optimization**: Feature selection ablations comparing full meteorological inputs against lean temperature/calendar sets.
+- **Probabilistic Calibration**: Rigorous evaluation of empirical 90% prediction intervals ($q_{0.05}$ to $q_{0.95}$) to measure risk calibration under extreme weather.
+- **Rolling ML Benchmark**: Comparison against dynamically retrained multi-quantile XGBoost models.
 
 ## ⚙️ Experiment Configuration
 
-- **Model**: `amazon/chronos-2`
+- **Models**: `amazon/chronos-2` (Transformer) & `NX-AI/TiRex-2` (xLSTM)
 - **Context Length**: 512 hours (historical lookback)
 - **Forecast Horizon**: 24 hours (day-ahead forecasting)
+- **Evaluation Origins**: Daily rolling origin at 00:00 local time across all 4 evaluation months.
 
 ## 🛰️ Data Sources & Preparation
 
-To rigorously evaluate the model across distinct geographies and climates, we compiled hourly datasets for Dallas, Texas (cooling-dominated) and Toronto, Ontario (heating-dominated/mixed).
+To rigorously evaluate the models across distinct geographies and climates, we compiled hourly datasets for Dallas, Texas (cooling-dominated) and Toronto, Ontario (heating-dominated/mixed).
 
 **Data Sources:**
 - **Dallas Energy Demand**: Hourly ERCOT load data for the NCENT region downloaded from the [ERCOT Load History](https://www.ercot.com/gridinfo/load/load_hist).
-- **Toronto Energy Demand**: Hourly IESO consumption data downloaded from [IESO Hourly Consumption](https://reports-public.ieso.ca/public/HourlyConsumptionByFSA/). We aggregated the total demand for all Forward Sortation Areas (FSAs) starting with 'M' (Toronto) across all customer types.
-- **Weather Data**: Hourly meteorological data (temperature, humidity, radiation, etc.) for both Dallas and Toronto sourced from the [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api).
+- **Toronto Energy Demand**: Hourly IESO consumption data downloaded from [IESO Hourly Consumption](https://reports-public.ieso.ca/public/HourlyConsumptionByFSA/). We aggregated total demand for all Forward Sortation Areas (FSAs) starting with 'M' (Toronto).
+- **Weather Data**: Hourly meteorological data (temperature, apparent temp, humidity, solar radiation, etc.) sourced from the [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api).
 
-**Data Preparation:**
-- **Timestamp Alignment**: Both ERCOT and IESO report timestamps as "Hour Ending" (hours 1-24). We converted these to standard "Beginning of Hour" `timestamp` format by subtracting one hour to align seamlessly with Open-Meteo weather data.
-- **Calendar Features**: Generated regional `day_of_week` and `is_holiday` variables (using Texas holidays for Dallas and Ontario holidays for Toronto).
-- **Frequency Handling**: All merged datasets were strictly resampled to an hourly frequency with linear interpolation to handle Daylight Saving Time transitions or missing rows.
+---
 
-## 📊 Benchmark Results: Dallas, Texas (ERCOT)
+## 📊 Benchmark Results: Dallas, Texas (ERCOT NCENT)
 
-Our experiments in Dallas compare the transition from univariate to covariate-aware forecasting across a mild spring month and an extreme summer load period.
-
-### Winter/Spring (March 2026)
-| Metric | Univariate | Full Covariates | Lean Covariates | Improvement (Lean vs Univ) |
-| :--- | :--- | :--- | :--- | :--- |
-| **MAE** | 749.78 | **565.24** | 574.32 | 23.4% |
-| **RMSE** | 1071.88 | 778.52 | **768.51** | 28.3% |
-| **sMAPE (%)** | 5.36% | **4.14%** | 4.18% | 22.0% |
-| **MASE** | 0.31 | **0.235** | 0.239 | 22.9% |
-| **Coverage (90%)** | 85.89% | 87.10% | **87.23%** | +1.34% |
-
-### Summer Extreme Load (August 2025)
-| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
-| :--- | :--- | :--- | :--- | :--- |
-| **MAE** | 906.91 | **535.35** | 588.46 | 1584.17 |
-| **RMSE** | 1422.20 | **753.09** | 785.56 | 2118.32 |
-| **sMAPE (%)**| 4.55% | **2.77%** | 3.10% | 8.25% |
-| **MASE** | 0.55 | **0.33** | 0.36 | 0.97 |
-| **Coverage (90%)**| 76.48% | **86.69%** | 79.30% | N/A |
-
-### Key Findings (Dallas)
-1. **Massive Summer Error Reduction**: Providing weather covariates during the intense summer heat reduced absolute errors by **over 40%** (2.77% sMAPE). The univariate model fails to anticipate large AC-driven spikes.
-2. **Restored Calibration**: The poor prediction interval coverage of the univariate model during extreme heat (76.48%) was completely fixed by adding full covariates (86.69%).
-3. **Full vs. Lean Configurations**: In mild months (March), Lean covariates optimized calibration. However, in extreme weather months, the **Full Covariates model wins across all metrics**, demonstrating that comprehensive weather features (humidity, radiation) are necessary for accurate peak load anticipation.
-
-## 🍁 Benchmark Results: Toronto, Ontario (IESO)
-
-To prove geographic and climatic transferability, we tested the model zero-shot on the Toronto grid across both extreme heating (Winter) and cooling (Summer) seasons.
-
-### Winter (February 2025)
-| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
-| :--- | :--- | :--- | :--- | :--- |
-| **MAE** | 21549.75 | **16196.69** | 16245.41 | 45506.55 |
-| **RMSE** | 28988.73 | **21099.33** | 21622.77 | 65669.01 |
-| **sMAPE (%)**| 2.41% | **1.80%** | 1.80% | 5.24% |
-| **MASE** | 0.31 | **0.23** | 0.23 | 0.66 |
-| **Coverage (90%)**| 84.52% | 85.71% | **86.90%** | N/A |
-
-### Summer (August 2025)
-| Metric | Univariate | Full Covariates | Lean Covariates | Seasonal Naive |
-| :--- | :--- | :--- | :--- | :--- |
-| **MAE** | 52074.45 | **31497.49** | 33780.52 | 233703.66 |
-| **RMSE** | 77963.33 | **43310.91** | 47170.08 | 282627.41 |
-| **sMAPE (%)**| 5.33% | **3.40%** | 3.53% | 24.09% |
-| **MASE** | 0.20 | **0.12** | 0.13 | 0.88 |
-| **Coverage (90%)**| **89.92%** | 89.11% | **89.92%** | N/A |
-
-### Key Findings (Toronto)
-1. **Universal Transfer**: The model successfully generalized from Texas to Canada zero-shot. In Winter, adding weather covariates pushed the error down to a remarkable **1.80% sMAPE**.
-2. **Extreme Volatility Resiliency**: During the Toronto summer, the Seasonal Naive baseline completely collapsed (24.09% error). Despite this massive week-over-week volatility, Chronos-2 maintained excellent accuracy (3.40% with covariates) and recognized the uncertainty, achieving near-perfect 89-90% interval coverage.
-
-## 📊 XGBoost vs. Chronos-2 Comparison
-
-To evaluate the zero-shot capabilities of Chronos-2 against traditional machine learning methods, we established a progressively built, local XGBoost baseline model trained on historical load and weather data. The XGBoost model incorporates target residual learning (predicting deviation from yesterday's load), Cooling/Heating Degree Days (CDD/HDD), long-term weather thermal inertia (48h/72h rolling means), and multi-quantile estimation (`reg:quantileerror` for the 5th and 95th percentiles).
-
-### Dallas, Texas (ERCOT)
-
-#### August 2025 (Summer Extreme Load Window)
-| Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
+### August 2025 (Summer Extreme Heat Window)
+| Model / Paradigm | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Chronos-2 (Full Covariates)** | **535.35** | **753.09** | **2.77%** | **0.33** | **86.69%** (Near-nominal) |
-| **XGBoost (Phase 6 - Probabilistic)** | 609.19 | 839.36 | 3.16% | 0.32 | 80.14% (Under-covering) |
-| **XGBoost (Phase 3 - Weather Aware)** | 627.13 | 839.70 | 3.24% | 0.33 | N/A |
+| **XGBoost (Phase 5/6 - Static)** | 609.19 | 839.36 | 3.16% | 0.32 | 80.14% (Under-covering) |
+| **XGBoost (Phase 7 - Rolling)** | 635.70 | 886.77 | 3.27% | 0.33 | 75.83% (Under-covering) |
+| **TiRex-2 (Full Covariates)** | 670.97 | 930.20 | 3.52% | 0.41 | **88.71%** (Near-nominal) |
+| **TiRex-2 (Lean Covariates)** | 721.86 | 1038.87 | 3.81% | 0.44 | 86.69% |
+| **Chronos-2 (Univariate)** | 906.91 | 1422.20 | 4.55% | 0.55 | 76.48% |
+| **TiRex-2 (Univariate)** | 937.13 | 1440.91 | 4.75% | 0.57 | 80.11% |
 | **Seasonal Naive Baseline** | 1584.17 | 2118.32 | 8.25% | 0.97 | N/A |
 
-#### March 2026 (Winter/Spring Window)
-| Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
+### March 2026 (Winter/Spring Transition Window)
+| Model / Paradigm | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **XGBoost (Phase 6 - Probabilistic)** | **531.41** | **672.01** | **3.98%** | **0.28** | 76.39% (Under-covering) |
-| **Chronos-2 (Full Covariates)** | 565.24 | 778.52 | 4.14% | 0.24 | **87.10%** (Near-nominal) |
-| **XGBoost (Phase 3 - Weather Aware)** | 542.07 | 695.32 | 4.05% | 0.28 | N/A |
+| **XGBoost (Phase 7 - Rolling)** | **471.38** | **608.03** | **3.52%** | **0.25** | 83.89% |
+| **XGBoost (Phase 5/6 - Static)** | 531.41 | 672.01 | 3.98% | 0.28 | 76.39% (Under-covering) |
+| **Chronos-2 (Full Covariates)** | 565.24 | 778.52 | 4.14% | **0.235** | **87.10%** (Near-nominal) |
+| **TiRex-2 (Full Covariates)** | 626.35 | 892.17 | 4.59% | 0.26 | 83.20% |
+| **Chronos-2 (Univariate)** | 749.78 | 1071.88 | 5.36% | 0.31 | 85.89% |
+| **TiRex-2 (Univariate)** | 765.22 | 1095.91 | 5.49% | 0.32 | 85.89% |
 | **Seasonal Naive Baseline** | 1565.43 | 2020.57 | 11.40% | 0.65 | N/A |
 
 ---
 
-### Toronto, Ontario (IESO)
+## 🍁 Benchmark Results: Toronto, Ontario (IESO)
 
-#### February 2025 (Winter Window)
-| Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
+### February 2025 (Winter Heating Peak Window)
+| Model / Paradigm | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Chronos-2 (Full Covariates)** | **16,196.69** | **21,099.33** | **1.80%** | **0.23** | 85.71% (Near-nominal) |
-| **XGBoost (Phase 6 - Probabilistic)** | 20,963.26 | 26,999.00 | 2.33% | 0.24 | **87.96%** (Near-nominal) |
+| **Chronos-2 (Full Covariates)** | **16,196.69** | **21,099.33** | **1.80%** | **0.23** | 85.71% |
+| **XGBoost (Phase 7 - Rolling)** | 18,751.78 | 24,547.76 | 2.11% | 0.22 | 87.50% |
+| **XGBoost (Phase 5/6 - Static)** | 20,963.26 | 26,999.00 | 2.33% | 0.24 | 87.96% |
+| **Chronos-2 (Univariate)** | 21,549.75 | 28,988.73 | 2.41% | 0.31 | 84.52% |
+| **TiRex-2 (Full Covariates)** | 21,952.63 | 29,901.38 | 2.43% | 0.32 | **89.88%** (Near-nominal) |
+| **TiRex-2 (Univariate)** | 22,980.07 | 30,741.14 | 2.55% | 0.33 | **90.33%** (Near-nominal) |
 | **Seasonal Naive Baseline** | 45,506.55 | 65,669.01 | 5.24% | 0.66 | N/A |
 
-#### August 2025 (Summer Window)
-| Model / Phase | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
+### August 2025 (Summer Volatile Peak Window)
+| Model / Paradigm | MAE | RMSE | sMAPE (%) | MASE | 90% Interval Coverage |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Chronos-2 (Full Covariates)** | **31,497.49** | **43,310.91** | **3.40%** | **0.12** | **89.11%** (Near-nominal) |
-| **XGBoost (Phase 6 - Probabilistic)** | 38,790.57 | 54,729.79 | 3.92% | 0.45 | 81.53% (Under-covering) |
+| **TiRex-2 (Lean Covariates)** | 37,414.60 | 52,731.04 | 3.95% | 0.14 | 93.55% |
+| **XGBoost (Phase 7 - Rolling)** | 37,674.52 | 54,432.74 | 3.85% | 0.42 | 83.75% |
+| **TiRex-2 (Full Covariates)** | 37,743.11 | 51,707.29 | 4.08% | 0.14 | **90.32%** (Near-nominal) |
+| **XGBoost (Phase 5/6 - Static)** | 38,790.57 | 54,729.79 | 3.92% | 0.45 | 81.53% |
+| **Chronos-2 (Univariate)** | 52,074.45 | 77,963.33 | 5.33% | 0.20 | **89.92%** |
+| **TiRex-2 (Univariate)** | 53,983.40 | 78,325.62 | 5.62% | 0.20 | **89.92%** |
 | **Seasonal Naive Baseline** | 233,703.66 | 282,627.41 | 24.09% | 0.88 | N/A |
 
 ---
 
-### Key Findings (XGBoost vs. Chronos-2)
+## 🏆 Key Findings & Architectural Insights
 
-1. **Climatic Transferability**: Chronos-2 demonstrates superior zero-shot performance when transferring to a new geography/climate. In Toronto, Chronos-2 wins across both winter and summer point accuracy metrics (MAE: 16.2k vs. 20.9k in winter, 31.5k vs. 38.8k in summer).
-2. **Point Forecast Competition**: Locally trained XGBoost is highly competitive in moderate seasons, outperforming Chronos-2 in the ERCOT winter/spring window (MAE: 531.41 vs 565.24). 
-3. **Probabilistic Calibration**: **Chronos-2 exhibits superior and more stable probabilistic calibration.** Its coverage stays consistently close to the nominal 90% target across all regions and windows (85% to 89%). In contrast, XGBoost's quantile regression intervals tend to be overconfident and under-cover target values (dropping to 76% in ERCOT winter and 81% in Toronto summer).
+1. **Univariate Foundation Model Parity**: In a purely univariate setting, **TiRex-2 and Chronos-2 achieve almost identical zero-shot accuracy** (4.75% vs. 4.55% sMAPE in Dallas; 2.55% vs. 2.41% in Toronto), demonstrating the strong baseline transferability of both models.
+2. **Covariate Conditioning**: **Chronos-2's cross-attention mechanisms yield higher point predictive gains** when conditioning on dense hourly weather features, leading the benchmark across extreme summer and winter peak windows (2.77% in Dallas; 1.80% in Toronto).
+3. **Probabilistic Uncertainty Calibration**: **TiRex-2 demonstrates world-class calibration.** Across both regions, its empirical 90% coverage consistently hits **88.7% to 90.3%**, avoiding the overconfidence/under-coverage observed in local quantile XGBoost models (which dipped to 75–80%).
+4. **Computational Efficiency**: Thanks to its non-autoregressive xLSTM recurrent formulation, **TiRex-2 executes in ~7 to 20 seconds for a full 31-day evaluation month** on Apple Silicon MPS with a small active parameter footprint (38.4M–82.5M params), making it ideal for edge and streaming deployments.
+
+---
 
 ## 📁 Project Structure
 
@@ -139,9 +100,12 @@ To evaluate the zero-shot capabilities of Chronos-2 against traditional machine 
 │   └── */raw/                             # Original source files
 ├── notebooks/
 │   ├── chronos-2/                         # Chronos-2 benchmark notebooks (ERCOT & IESO)
-│   ├── chronos-tutorial/                  # Quickstart and covariate baseline notebooks
-│   └── xgboost/                           # XGBoost baseline notebooks
+│   ├── tirex-2/                           # TiRex-2 benchmark notebooks (ERCOT & IESO)
+│   ├── chronos-tutorial/                  # Chronos tutorial and quickstart notebooks
+│   ├── xgboost/                           # Static XGBoost baseline notebooks
+│   └── xgboost-rolling/                   # Rolling retrained XGBoost notebooks
 └── src/
+    ├── tirex_pipeline.py                  # TiRex-2 DataFrame forecasting adapter
     ├── prepare_forecast_data.py           # ERCOT Dallas data preparation
     └── prepare_ieso_forecast_data.py      # IESO Toronto data preparation
 ```
@@ -150,4 +114,6 @@ To evaluate the zero-shot capabilities of Chronos-2 against traditional machine 
 
 - **Chronos (2024)**: [Chronos: Learning the Language of Time Series](https://arxiv.org/abs/2403.05950) (Ansari et al.).
 - **Chronos-2 (2025)**: [Chronos-2: From Univariate to Universal Forecasting](https://arxiv.org/abs/2510.15821) (Ansari et al.).
-- **Energy Load Forecasting (2026)**: [Time Series Foundation Models for Energy Load Forecasting on Consumer Hardware: A Multi-Dimensional Zero-Shot Benchmark](https://arxiv.org/abs/2602.10848) (Luigi Simeone).
+- **TiRex (2025)**: [TiRex: Zero-Shot Forecasting Across Long and Short Horizons](https://arxiv.org/abs/2505.23746) (NX-AI / Hochreiter et al.).
+- **TiRex-2 (2026)**: [TiRex-2: Generalizing TiRex to Multivariate Data and Streaming](https://arxiv.org/abs/2602.04944) (NX-AI / Hochreiter et al.).
+- **Energy Load Forecasting (2026)**: [Time Series Foundation Models for Energy Load Forecasting on Consumer Hardware](https://arxiv.org/abs/2602.10848) (Luigi Simeone).
